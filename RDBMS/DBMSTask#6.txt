@@ -1,0 +1,162 @@
+-- Create table Departments 
+CREATE TABLE Departments (
+    department_id INT PRIMARY KEY,
+    department_name VARCHAR(100) NOT NULL
+);
+
+-- Create   Table Specialties
+CREATE TABLE Specialties (
+    specialty_id INT PRIMARY KEY,
+    specialty_name VARCHAR(100) NOT NULL
+);
+
+-- Create Table Doctors 
+CREATE TABLE Doctors (
+    doctor_id INT PRIMARY KEY,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    department_id INT,
+    specialty_id INT,
+    joining_date DATE,
+    FOREIGN KEY (department_id) REFERENCES Departments(department_id),
+    FOREIGN KEY (specialty_id) REFERENCES Specialties(specialty_id)
+);
+
+-- Create Table Patients 
+CREATE TABLE Patients (
+    patient_id INT PRIMARY KEY,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    date_of_birth DATE NOT NULL,
+    gender VARCHAR(10) NOT NULL,
+    address TEXT NOT NULL
+);
+
+-- Create Table Appointments 
+CREATE TABLE Appointments (
+    appointment_id INT PRIMARY KEY,
+    doctor_id INT,
+    patient_id INT,
+    appointment_date DATETIME,
+    reason TEXT,
+    status VARCHAR(20),
+    FOREIGN KEY (doctor_id) REFERENCES Doctors(doctor_id),
+    FOREIGN KEY (patient_id) REFERENCES Patients(patient_id)
+);
+
+-- Create Table Payments 
+CREATE TABLE Payments (
+    payment_id INT PRIMARY KEY,
+    appointment_id INT,
+    payment_date DATE,
+    payment_amount DECIMAL(10, 2),
+    payment_method VARCHAR(20),
+    FOREIGN KEY (appointment_id) REFERENCES Appointments(appointment_id)
+);
+
+-- Insert Data into Departments Table
+INSERT INTO Departments (department_id, department_name) VALUES 
+(1, 'Cardiology'),
+(2, 'Dermatology'),
+(3, 'Neurology');
+
+-- Insert Data into Specialties Table
+INSERT INTO Specialties (specialty_id, specialty_name) VALUES 
+(1, 'Cardiologist'),
+(2, 'Dermatologist'),
+(3, 'Neurologist');
+
+-- Insert Data into Doctors Table
+INSERT INTO Doctors (doctor_id, first_name, last_name, email, phone, department_id, specialty_id, joining_date) VALUES 
+(1, 'John', 'Smith', 'john.smith@example.com', '1234567890', 1, 1, '2015-05-01'),
+(2, 'Jane', 'Doe', 'jane.doe@example.com', '0987654321', 2, 2, '2016-03-12'),
+(3, 'Sam', 'Johnson', 'sam.johnson@example.com', '1122334455', 3, 3, '2017-08-19');
+
+-- Insert Data into Patients Table
+INSERT INTO Patients (patient_id, first_name, last_name, email, phone, date_of_birth, gender, address) VALUES 
+(1, 'Alice', 'Williams', 'alice@example.com', '1231231234', '1990-01-15', 'Female', '123 Main St, City, Country'),
+(2, 'Bob', 'Brown', 'bob@example.com', '2342342345', '1985-07-10', 'Male', '456 Oak St, City, Country'),
+(3, 'Charlie', 'Davis', 'charlie@example.com', '3453453456', '2000-11-22', 'Male', '789 Pine St, City, Country');
+
+-- Insert Data into Appointments Table
+INSERT INTO Appointments (appointment_id, doctor_id, patient_id, appointment_date, reason, status) VALUES 
+(1, 1, 1, '2025-01-20 09:00:00', 'Heart checkup', 'Scheduled'),
+(2, 2, 2, '2025-01-21 10:00:00', 'Skin rash', 'Scheduled'),
+(3, 3, 3, '2025-01-22 11:00:00', 'Neurological examination', 'Scheduled'),
+(4, 1, 2, '2025-01-23 14:00:00', 'Blood pressure check', 'Cancelled'),
+(5, 2, 3, '2025-01-24 15:00:00', 'Dermatological consultation', 'Completed');
+
+-- Insert Data into Payments Table
+INSERT INTO Payments (payment_id, appointment_id, payment_date, payment_amount, payment_method) VALUES 
+(1, 1, '2025-01-19', 150.00, 'Credit Card'),
+(2, 5, '2025-01-24', 100.00, 'Cash');
+ 
+ 1.Find the Total Number of Appointments for Each Doctor.
+ -> SELECT doctor_id, COUNT(appointment_id) AS total_appointments
+FROM Appointments
+GROUP BY doctor_id;
+
+2. List All Patients Who Have an Appointment with a Specific Doctor (e.g., Dr. John Smith).
+-> SELECT p.first_name, p.last_name, p.email
+FROM Patients p
+JOIN Appointments a ON p.patient_id = a.patient_id
+JOIN Doctors d ON a.doctor_id = d.doctor_id
+WHERE d.first_name = 'John' AND d.last_name = 'Smith';
+
+3. Find the Number of Appointments Scheduled in a Specific Department.
+-> SELECT d.department_name, COUNT(a.appointment_id) AS total_appointments
+FROM Appointments a
+JOIN Doctors doc ON a.doctor_id = doc.doctor_id
+JOIN Departments d ON doc.department_id = d.department_id
+WHERE d.department_name = 'Cardiology'
+GROUP BY d.department_name;
+
+4. Find the Most Popular Specialty Based on Number of Appointments.
+-> SELECT s.specialty_name, COUNT(a.appointment_id) AS total_appointments
+FROM Appointments a
+JOIN Doctors doc ON a.doctor_id = doc.doctor_id
+JOIN Specialties s ON doc.specialty_id = s.specialty_id
+GROUP BY s.specialty_name
+ORDER BY total_appointments DESC
+LIMIT 1;
+
+5. Get the Total Payment Amount for All Completed Appointments.
+-> SELECT SUM(p.payment_amount) AS total_payment
+FROM Payments p
+JOIN Appointments a ON p.appointment_id = a.appointment_id
+WHERE a.status = 'Completed';
+6. Find the Number of Patients Seen by Each Doctor.
+-> SELECT doc.first_name, doc.last_name, COUNT(DISTINCT a.patient_id) AS total_patients
+FROM Appointments a
+JOIN Doctors doc ON a.doctor_id = doc.doctor_id
+GROUP BY doc.first_name, doc.last_name;
+
+7. List All Patients Who Have Missed Their Appointments (Status 'Cancelled').
+-> SELECT p.first_name, p.last_name, p.email
+FROM Patients p
+JOIN Appointments a ON p.patient_id = a.patient_id
+WHERE a.status = 'Cancelled';
+
+8. Find the Total Number of Appointments for Each Status (Scheduled, Completed, Cancelled).
+-> SELECT status, COUNT(appointment_id) AS total_appointments
+FROM Appointments
+GROUP BY status;
+
+9. Get the Average Payment Amount for Completed Appointments.
+-> SELECT AVG(p.payment_amount) AS average_payment
+FROM Payments p
+JOIN Appointments a ON p.appointment_id = a.appointment_id
+WHERE a.status = 'Completed';
+
+10. Find the Doctor with the Highest Number of Appointments.
+-> SELECT doc.first_name, doc.last_name, COUNT(a.appointment_id) AS total_appointments
+FROM Appointments a
+JOIN Doctors doc ON a.doctor_id = doc.doctor_id
+GROUP BY doc.first_name, doc.last_name
+ORDER BY total_appointments DESC
+LIMIT 1;
+
