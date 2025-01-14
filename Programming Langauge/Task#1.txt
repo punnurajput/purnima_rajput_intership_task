@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Quiz App</title>
+    <!-- Adding Bootstrap for styling -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f0f8ff;
+        }
+        .quiz-container {
+            margin-top: 50px;
+            text-align: center;
+        }
+        .question {
+            font-size: 1.5rem;
+        }
+        .answer-btn {
+            margin-top: 10px;
+        }
+        .result {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        #quiz-section {
+            display: block;
+        }
+        #result-section {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container quiz-container">
+    <div id="quiz-section">
+        <div class="question mb-4" id="question-text"></div>
+        <div id="answers-list"></div>
+        <div id="feedback" class="mt-3"></div>
+    </div>
+
+    <div id="result-section">
+        <div class="result mb-4" id="final-score"></div>
+        <button class="btn btn-primary" id="reset-btn">Retake Quiz</button>
+    </div>
+</div>
+
+<!-- Bootstrap JS and Popper.js -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="quiz.js"></script>
+
+<script>
+
+    // quiz.js
+
+// Array holding the quiz questions, options, and correct answers
+const quizData = [
+    {
+        question: "What is the capital of France?",
+        options: ["Berlin", "Madrid", "Paris", "Rome"],
+        correct: 2 // Paris is the correct answer (index 2)
+    },
+    {
+        question: "Which planet is known as the Red Planet?",
+        options: ["Earth", "Mars", "Jupiter", "Venus"],
+        correct: 1 // Mars is the correct answer (index 1)
+    },
+    {
+        question: "Who wrote 'Romeo and Juliet'?",
+        options: ["Shakespeare", "Dickens", "Hemingway", "Austen"],
+        correct: 0 // Shakespeare is the correct answer (index 0)
+    },
+    {
+        question: "What is the largest ocean on Earth?",
+        options: ["Atlantic", "Indian", "Arctic", "Pacific"],
+        correct: 3 // Pacific is the correct answer (index 3)
+    }
+];
+
+let currentQuestionIndex = 0; // Track the current question
+let score = 0; // Track the score
+
+// Function to load the current question
+function loadQuestion() {
+    const questionObj = quizData[currentQuestionIndex];  // Get the current question
+    document.getElementById("question-text").textContent = questionObj.question;  // Display the question
+    
+    const answersList = document.getElementById("answers-list");
+    answersList.innerHTML = ''; // Clear previous answers
+    
+    questionObj.options.forEach((option, index) => {
+        const button = document.createElement('button');
+        button.textContent = option; // Display each option as a button
+        button.classList.add('btn', 'btn-outline-primary', 'answer-btn');
+        button.onclick = () => checkAnswer(index); // Check the answer when clicked
+        answersList.appendChild(button);
+    });
+}
+
+// Function to check the answer
+function checkAnswer(selectedIndex) {
+    const questionObj = quizData[currentQuestionIndex];
+    const feedback = document.getElementById("feedback");
+
+    // Check if the selected answer is correct
+    if (selectedIndex === questionObj.correct) {
+        score++;
+        feedback.textContent = "Correct!";  // Provide feedback
+        feedback.classList.add('text-success');
+        feedback.classList.remove('text-danger');
+    } else {
+        feedback.textContent = "Incorrect!";  // Provide feedback
+        feedback.classList.add('text-danger');
+        feedback.classList.remove('text-success');
+    }
+
+    // Move to the next question
+    currentQuestionIndex++;
+
+    // If there are more questions, load the next question
+    if (currentQuestionIndex < quizData.length) {
+        setTimeout(loadQuestion, 1000);  // Wait for 1 second before showing the next question
+    } else {
+        setTimeout(showResult, 1000);  // Show result after the last question
+    }
+}
+
+// Function to show the final score
+function showResult() {
+    document.getElementById("quiz-section").style.display = 'none';  // Hide the quiz section
+    const finalScore = document.getElementById("final-score");
+    finalScore.textContent = `Your final score is: ${score} / ${quizData.length}`;  // Display the score
+    document.getElementById("result-section").style.display = 'block';  // Show the result section
+}
+
+// Function to reset the quiz
+function resetQuiz() {
+    currentQuestionIndex = 0;
+    score = 0;
+    document.getElementById("result-section").style.display = 'none';  // Hide result section
+    document.getElementById("quiz-section").style.display = 'block';  // Show quiz section again
+    loadQuestion();  // Load the first question
+}
+
+// Event listener for reset button
+document.getElementById("reset-btn").addEventListener('click', resetQuiz);
+
+// Load the first question when the page loads
+loadQuestion();
+
+</script>
+
+
+
+
+</body>
+</html>
