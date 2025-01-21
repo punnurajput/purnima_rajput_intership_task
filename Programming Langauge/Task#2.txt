@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Feed</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+.container {
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+#article-form {
+    margin-bottom: 20px;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+.articles-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.article-card {
+    background-color: white;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+#pagination button {
+    margin: 0 10px;
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Article Form Section -->
+        <section id="article-form">
+            <h2>Add Article</h2>
+            <form id="form">
+                <input type="text" id="title" placeholder="Title" required>
+                <textarea id="description" placeholder="Description" required></textarea>
+                <input type="text" id="image-url" placeholder="Image URL (optional)">
+                <button type="submit">Add Article</button>
+            </form>
+        </section>
+
+        <!-- News Feed Section -->
+        <section id="news-feed">
+            <div id="articles" class="articles-grid"></div>
+        </section>
+
+        <!-- Pagination Controls -->
+        <section id="pagination">
+            <button id="prev-btn">Previous</button>
+            <span id="page-numbers"></span>
+            <button id="next-btn">Next</button>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+    <script>// Array to store articles
+let articles = [];
+let currentPage = 1;
+const articlesPerPage = 4;
+
+// Get DOM elements
+const form = document.getElementById('form');
+const articlesContainer = document.getElementById('articles');
+const prevButton = document.getElementById('prev-btn');
+const nextButton = document.getElementById('next-btn');
+const pageNumbersContainer = document.getElementById('page-numbers');
+
+// Add event listener to the form
+form.addEventListener('submit', function (e) {
+    e.preventDefault(); // Prevent the form from refreshing the page
+
+    const title = document.getElementById('title').value;
+    const description = document.getElementById('description').value;
+    const imageUrl = document.getElementById('image-url').value;
+
+    // Validate that title and description are not empty
+    if (title && description) {
+        const newArticle = { title, description, imageUrl };
+        articles.push(newArticle); // Add the new article to the articles array
+
+        form.reset(); // Reset the form fields
+        renderArticles(); // Re-render the articles to display the new one
+    } else {
+        alert('Title and description are required');
+    }
+});
+
+// Function to render articles based on the current page
+function renderArticles() {
+    // Calculate start and end index for current page
+    const start = (currentPage - 1) * articlesPerPage;
+    const end = currentPage * articlesPerPage;
+    const currentArticles = articles.slice(start, end); // Get the articles for the current page
+
+    // Clear the articles container before adding new articles
+    articlesContainer.innerHTML = '';
+
+    // Loop through the articles and create the HTML for each one
+    currentArticles.forEach(article => {
+        const articleCard = document.createElement('div');
+        articleCard.classList.add('article-card');
+        articleCard.innerHTML = `
+            <h3>${article.title}</h3>
+            <p>${article.description}</p>
+            ${article.imageUrl ? `<img src="${article.imageUrl}" alt="${article.title}" style="width: 100%;">` : ''}
+        `;
+        articlesContainer.appendChild(articleCard); // Append the article card to the container
+    });
+
+    // Update pagination controls
+    updatePagination();
+}
+
+// Function to update pagination controls
+function updatePagination() {
+    const totalPages = Math.ceil(articles.length / articlesPerPage);
+    pageNumbersContainer.innerHTML = '';
+
+    // Create page number buttons
+    for (let i = 1; i <= totalPages; i++) {
+        const pageButton = document.createElement('button');
+        pageButton.textContent = i;
+        pageButton.onclick = function () {
+            currentPage = i;
+            renderArticles();
+        };
+        pageNumbersContainer.appendChild(pageButton);
+    }
+
+    // Disable "Previous" and "Next" buttons when on first or last page
+    prevButton.disabled = currentPage === 1;
+    nextButton.disabled = currentPage === totalPages;
+}
+
+// Event listeners for "Previous" and "Next" buttons
+prevButton.addEventListener('click', function () {
+    if (currentPage > 1) {
+        currentPage--;
+        renderArticles();
+    }
+});
+
+nextButton.addEventListener('click', function () {
+    const totalPages = Math.ceil(articles.length / articlesPerPage);
+    if (currentPage < totalPages) {
+        currentPage++;
+        renderArticles();
+    }
+});
+
+// Initial render of articles
+renderArticles();
+</script>
+</body>
+</html>
